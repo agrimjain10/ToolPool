@@ -1,0 +1,15 @@
+node_modules/
+client/node_modules/
+client/dist/
+.env
+.env.*
+*.log
+.DS_Store
+.vite/
+
+# Original design exports kept only as local references
+confirm_borrowing_request/
+find_tools_neighborhood_exchange/
+kinship_craft/
+my_workshop_lender_dashboard/
+neighborhood_admin_control/
