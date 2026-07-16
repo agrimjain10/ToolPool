@@ -1,19 +1,23 @@
 {
   "name": "toolpool-neighborhood-sharing",
   "private": true,
-  "workspaces": ["client"],
+  "workspaces": [
+    "client"
+  ],
   "scripts": {
     "server": "node server/server.js",
     "client": "npm --prefix client run dev -- --host 0.0.0.0",
-    "dev": "npm run client",
+    "frontend": "npm run client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "npm --prefix client run build",
     "seed": "node server/seed.js"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.0",
     "express": "^4.19.2",
-    "mongoose": "^8.5.1",
-    "mongodb-memory-server": "^10.0.0"
+    "mongodb-memory-server": "^10.0.0",
+    "mongoose": "^8.5.1"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

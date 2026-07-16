@@ -2,14 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const connectDatabase = require('./db');
+const { hashPassword, comparePassword } = require('./authHelpers');
+const User = require('./models/userModel');
 const Tool = require('./models/toolModel');
 const Request = require('./models/requestModel');
-const User = require('./models/userModel');
 const Favorite = require('./models/favoriteModel');
 const Review = require('./models/reviewModel');
 const Message = require('./models/messageModel');
 const Notification = require('./models/notificationModel');
-const { hashPassword, comparePassword } = require('./authHelpers');
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -25,106 +25,137 @@ function route(method, url, handler) {
       await handler(req, res);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Something went wrong. Please try again.' });
+      res.status(500).json({ error: 'Server error. Please try again.' });
     }
   });
 }
 
-function requiredFields(body, fields) {
+function missingFields(body, fields) {
   return fields.filter((field) => !String(body[field] ?? '').trim());
 }
 
-function getToolFilter(query) {
+function userResponse(user) {
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt
+  };
+}
+
+function toolFilter(query) {
   const filter = {};
+
   if (query.category) filter.category = new RegExp(query.category, 'i');
   if (query.location) filter.location = new RegExp(query.location, 'i');
   if (query.available === 'true') filter.available = true;
   if (query.available === 'false') filter.available = false;
   if (query.q) {
-    const search = new RegExp(query.q, 'i');
-    filter.$or = [{ name: search }, { category: search }, { description: search }, { owner: search }];
+    const text = new RegExp(query.q, 'i');
+    filter.$or = [{ name: text }, { category: text }, { location: text }, { owner: text }];
   }
+
   return filter;
 }
 
 async function seedSampleData() {
+  const userCount = await User.countDocuments();
   const toolCount = await Tool.countDocuments();
-  if (toolCount > 0) return;
 
-  const sampleTools = await Tool.insertMany([
+  if (!userCount) {
+    await User.create([
+      {
+        name: 'Agrim Jain',
+        email: 'agrim@example.com',
+        password: await hashPassword('123456'),
+        role: 'admin'
+      },
+      {
+        name: 'Rohan Mehta',
+        email: 'rohan@example.com',
+        password: await hashPassword('123456'),
+        role: 'customer'
+      }
+    ]);
+  }
+
+  if (toolCount) return;
+
+  const tools = await Tool.create([
     {
-      name: 'DeWalt 20V Max Drill',
-      category: 'Power Tools',
-      owner: 'Sarah Jenkins',
-      location: 'Oak Ridge',
-      distance: '1.2 mi',
-      deposit: 20,
+      name: 'Bosch Impact Drill',
+      category: 'Power tools',
+      owner: 'Rohan Mehta',
+      location: 'Vijay Nagar',
+      distance: '350 m away',
+      deposit: 500,
       available: true,
-      description: 'Heavy-duty drill with two batteries and a basic bit set.',
-      image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=900&q=80'
+      description: 'Compact drill with charger and basic bit set.',
+      image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=900&q=85'
     },
     {
-      name: 'Heavy Duty Extension Cord',
-      category: 'Outdoor',
-      owner: 'Miguel Brooks',
-      location: 'Maple Grove',
-      distance: '2.6 mi',
-      deposit: 10,
+      name: '6 ft Step Ladder',
+      category: 'Home repair',
+      owner: 'Ananya Shah',
+      location: 'Scheme 54',
+      distance: '700 m away',
+      deposit: 300,
       available: true,
-      description: '100-foot outdoor extension cord for community events.',
-      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80'
+      description: 'Light aluminium ladder for home repair work.',
+      image: 'https://images.unsplash.com/photo-1591588582259-e675bd2e6088?auto=format&fit=crop&w=900&q=85'
     },
     {
-      name: 'Garden Wheelbarrow',
+      name: 'Garden Tool Set',
       category: 'Gardening',
-      owner: 'Amina Shah',
-      location: 'Cedar Lane',
-      distance: '0.8 mi',
-      deposit: 15,
+      owner: 'Neha Verma',
+      location: 'Palasia',
+      distance: '1.1 km away',
+      deposit: 250,
       available: false,
-      description: 'Sturdy wheelbarrow for yard work and mulch transport.',
-      image: 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=900&q=80'
-    },
-    {
-      name: 'Folding Ladder',
-      category: 'Home Repair',
-      owner: 'Noah Patel',
-      location: 'Pine Street',
-      distance: '1.7 mi',
-      deposit: 25,
-      available: true,
-      description: 'Multi-position ladder for painting, gutters, and garage projects.',
-      image: 'https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=900&q=80'
+      description: 'Trowel, pruner, cultivator and gloves in one kit.',
+      image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=85'
     }
   ]);
 
   await Request.create({
-    toolId: sampleTools[0]._id,
-    borrower: 'Arthur Pendelton',
-    message: 'I need it for an afternoon to hang shelves.',
-    deposit: 20,
+    toolId: tools[0]._id,
+    borrower: 'Agrim Jain',
+    message: 'Need it for shelf fitting this weekend.',
+    deposit: tools[0].deposit,
     status: 'pending'
   });
 
-  await Review.create({ toolId: sampleTools[0]._id, reviewer: 'Maya Chen', rating: 5, comment: 'Easy pickup and the drill worked perfectly.' });
-  await Notification.create({ userName: 'Sarah Jenkins', title: 'New borrow request', text: 'Arthur wants to borrow your drill.' });
+  await Review.create({
+    toolId: tools[0]._id,
+    reviewer: 'Agrim Jain',
+    rating: 5,
+    comment: 'Tool was clean and worked nicely.'
+  });
 }
 
+// Basic API info
 route('get', '/api', (req, res) => {
-  res.json({ name: 'Neighborhood Tool Sharing API', totalRoutes: apiRoutes.length, routes: apiRoutes });
+  res.json({
+    name: 'ToolPool MERN API',
+    message: '45 self-made APIs are ready',
+    totalRoutes: apiRoutes.length,
+    routes: apiRoutes
+  });
 });
 
 route('get', '/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Neighborhood Tool Sharing API is live' });
+  res.json({ status: 'ok', database: 'connected', app: 'ToolPool' });
 });
 
+// Auth APIs
 route('post', '/api/auth/register', async (req, res) => {
-  const missing = requiredFields(req.body, ['name', 'email', 'password']);
+  const missing = missingFields(req.body, ['name', 'email', 'password']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
   const email = req.body.email.toLowerCase().trim();
-  const existingUser = await User.findOne({ email }).lean();
-  if (existingUser) return res.status(400).json({ error: 'An account with this email already exists.' });
+  const alreadyExists = await User.findOne({ email });
+  if (alreadyExists) return res.status(400).json({ error: 'Email already registered' });
 
   const user = await User.create({
     name: req.body.name,
@@ -133,105 +164,126 @@ route('post', '/api/auth/register', async (req, res) => {
     role: req.body.role === 'admin' ? 'admin' : 'customer'
   });
 
-  res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role });
+  res.status(201).json(userResponse(user));
 });
 
 route('post', '/api/auth/login', async (req, res) => {
-  const missing = requiredFields(req.body, ['email', 'password']);
+  const missing = missingFields(req.body, ['email', 'password']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
   const user = await User.findOne({ email: req.body.email.toLowerCase().trim() });
   if (!user || !(await comparePassword(req.body.password, user.password))) {
-    return res.status(401).json({ error: 'Email or password is incorrect.' });
+    return res.status(401).json({ error: 'Invalid email or password' });
   }
 
-  res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
-});
-
-route('post', '/api/auth/check-email', async (req, res) => {
-  const user = await User.findOne({ email: String(req.body.email || '').toLowerCase().trim() }).lean();
-  res.json({ available: !user });
+  res.json({ ...userResponse(user), token: `local-${user._id}` });
 });
 
 route('post', '/api/auth/logout', (req, res) => {
-  res.json({ message: 'Logged out locally.' });
+  res.json({ message: 'Logged out successfully' });
 });
 
-route('patch', '/api/auth/profile/:id', async (req, res) => {
-  const update = { name: req.body.name, email: req.body.email };
-  Object.keys(update).forEach((key) => update[key] === undefined && delete update[key]);
-  const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true }).lean();
+route('patch', '/api/auth/password/:id', async (req, res) => {
+  const missing = missingFields(req.body, ['oldPassword', 'newPassword']);
+  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
+
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ id: user._id, name: user.name, email: user.email, role: user.role });
+  if (!(await comparePassword(req.body.oldPassword, user.password))) {
+    return res.status(401).json({ error: 'Old password is wrong' });
+  }
+
+  user.password = await hashPassword(req.body.newPassword);
+  await user.save();
+  res.json({ message: 'Password updated' });
 });
 
+// User APIs
+route('get', '/api/users', async (req, res) => {
+  const users = await User.find().select('-password').sort({ createdAt: -1 });
+  res.json(users);
+});
+
+route('get', '/api/users/admins', async (req, res) => {
+  res.json(await User.find({ role: 'admin' }).select('-password'));
+});
+
+route('get', '/api/users/customers', async (req, res) => {
+  res.json(await User.find({ role: 'customer' }).select('-password'));
+});
+
+route('get', '/api/users/:id', async (req, res) => {
+  const user = await User.findById(req.params.id).select('-password');
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json(user);
+});
+
+route('post', '/api/users', async (req, res) => {
+  const missing = missingFields(req.body, ['name', 'email', 'password']);
+  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
+
+  const user = await User.create({
+    name: req.body.name,
+    email: req.body.email.toLowerCase().trim(),
+    password: await hashPassword(req.body.password),
+    role: req.body.role === 'admin' ? 'admin' : 'customer'
+  });
+
+  res.status(201).json(userResponse(user));
+});
+
+route('patch', '/api/users/:id', async (req, res) => {
+  const update = { name: req.body.name, email: req.body.email, role: req.body.role };
+  Object.keys(update).forEach((key) => update[key] === undefined && delete update[key]);
+  const user = await User.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true }).select('-password');
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json(user);
+});
+
+route('delete', '/api/users/:id', async (req, res) => {
+  const user = await User.findByIdAndDelete(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ message: 'User deleted' });
+});
+
+// Tool APIs
 route('get', '/api/tools', async (req, res) => {
-  const tools = await Tool.find(getToolFilter(req.query)).sort({ createdAt: -1 }).lean();
-  res.json(tools);
+  res.json(await Tool.find(toolFilter(req.query)).sort({ createdAt: -1 }));
 });
 
 route('get', '/api/tools/featured', async (req, res) => {
-  const tools = await Tool.find({ available: true }).sort({ deposit: 1 }).limit(6).lean();
-  res.json(tools);
-});
-
-route('get', '/api/tools/search', async (req, res) => {
-  const tools = await Tool.find(getToolFilter(req.query)).limit(20).lean();
-  res.json(tools);
+  res.json(await Tool.find({ available: true }).sort({ deposit: 1 }).limit(6));
 });
 
 route('get', '/api/tools/categories', async (req, res) => {
-  const categories = await Tool.distinct('category');
-  res.json(categories.sort());
-});
-
-route('get', '/api/tools/locations', async (req, res) => {
-  const locations = await Tool.distinct('location');
-  res.json(locations.sort());
+  res.json((await Tool.distinct('category')).sort());
 });
 
 route('get', '/api/tools/available', async (req, res) => {
-  res.json(await Tool.find({ available: true }).sort({ name: 1 }).lean());
-});
-
-route('get', '/api/tools/borrowed', async (req, res) => {
-  res.json(await Tool.find({ available: false }).sort({ updatedAt: -1 }).lean());
-});
-
-route('get', '/api/tools/recent', async (req, res) => {
-  res.json(await Tool.find().sort({ createdAt: -1 }).limit(8).lean());
-});
-
-route('get', '/api/tools/nearby/:location', async (req, res) => {
-  res.json(await Tool.find({ location: new RegExp(req.params.location, 'i') }).lean());
+  res.json(await Tool.find({ available: true }).sort({ name: 1 }));
 });
 
 route('get', '/api/tools/owner/:owner', async (req, res) => {
-  res.json(await Tool.find({ owner: new RegExp(req.params.owner, 'i') }).sort({ createdAt: -1 }).lean());
-});
-
-route('get', '/api/tools/category/:category', async (req, res) => {
-  res.json(await Tool.find({ category: new RegExp(req.params.category, 'i') }).lean());
+  res.json(await Tool.find({ owner: new RegExp(req.params.owner, 'i') }).sort({ createdAt: -1 }));
 });
 
 route('get', '/api/tools/:id', async (req, res) => {
-  const tool = await Tool.findById(req.params.id).lean();
+  const tool = await Tool.findById(req.params.id);
   if (!tool) return res.status(404).json({ error: 'Tool not found' });
   res.json(tool);
 });
 
 route('post', '/api/tools', async (req, res) => {
-  const missing = requiredFields(req.body, ['name', 'category', 'owner', 'location', 'description']);
+  const missing = missingFields(req.body, ['name', 'category', 'owner', 'location', 'description']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
-  const tool = await Tool.create({ ...req.body, available: req.body.available !== false, deposit: Number(req.body.deposit || 0) });
-  res.status(201).json(tool);
-});
+  const tool = await Tool.create({
+    ...req.body,
+    deposit: Number(req.body.deposit || 0),
+    available: req.body.available !== false
+  });
 
-route('put', '/api/tools/:id', async (req, res) => {
-  const tool = await Tool.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-  if (!tool) return res.status(404).json({ error: 'Tool not found' });
-  res.json(tool);
+  res.status(201).json(tool);
 });
 
 route('patch', '/api/tools/:id', async (req, res) => {
@@ -244,6 +296,8 @@ route('delete', '/api/tools/:id', async (req, res) => {
   const tool = await Tool.findByIdAndDelete(req.params.id);
   if (!tool) return res.status(404).json({ error: 'Tool not found' });
   await Request.deleteMany({ toolId: req.params.id });
+  await Favorite.deleteMany({ toolId: req.params.id });
+  await Review.deleteMany({ toolId: req.params.id });
   res.json({ message: 'Tool deleted' });
 });
 
@@ -253,78 +307,58 @@ route('patch', '/api/tools/:id/availability', async (req, res) => {
   res.json(tool);
 });
 
-route('patch', '/api/tools/:id/deposit', async (req, res) => {
-  const tool = await Tool.findByIdAndUpdate(req.params.id, { deposit: Number(req.body.deposit || 0) }, { new: true, runValidators: true });
-  if (!tool) return res.status(404).json({ error: 'Tool not found' });
-  res.json(tool);
-});
-
-route('patch', '/api/tools/:id/image', async (req, res) => {
-  const tool = await Tool.findByIdAndUpdate(req.params.id, { image: req.body.image }, { new: true, runValidators: true });
-  if (!tool) return res.status(404).json({ error: 'Tool not found' });
-  res.json(tool);
-});
-
+// Borrow request APIs
 route('get', '/api/requests', async (req, res) => {
-  res.json(await Request.find(req.query.status ? { status: req.query.status } : {}).sort({ createdAt: -1 }).populate('toolId').lean());
+  const filter = req.query.status ? { status: req.query.status } : {};
+  res.json(await Request.find(filter).populate('toolId').sort({ createdAt: -1 }));
 });
 
 route('get', '/api/requests/pending', async (req, res) => {
-  res.json(await Request.find({ status: 'pending' }).populate('toolId').lean());
-});
-
-route('get', '/api/requests/approved', async (req, res) => {
-  res.json(await Request.find({ status: 'approved' }).populate('toolId').lean());
-});
-
-route('get', '/api/requests/returned', async (req, res) => {
-  res.json(await Request.find({ status: 'returned' }).populate('toolId').lean());
+  res.json(await Request.find({ status: 'pending' }).populate('toolId').sort({ createdAt: -1 }));
 });
 
 route('get', '/api/requests/mine/:borrower', async (req, res) => {
-  res.json(await Request.find({ borrower: new RegExp(req.params.borrower, 'i') }).populate('toolId').lean());
-});
-
-route('get', '/api/requests/tool/:toolId', async (req, res) => {
-  res.json(await Request.find({ toolId: req.params.toolId }).sort({ createdAt: -1 }).lean());
+  res.json(await Request.find({ borrower: new RegExp(req.params.borrower, 'i') }).populate('toolId'));
 });
 
 route('get', '/api/requests/:id', async (req, res) => {
-  const request = await Request.findById(req.params.id).populate('toolId').lean();
+  const request = await Request.findById(req.params.id).populate('toolId');
   if (!request) return res.status(404).json({ error: 'Request not found' });
   res.json(request);
 });
 
 route('post', '/api/requests', async (req, res) => {
-  const missing = requiredFields(req.body, ['toolId', 'borrower', 'message']);
+  const missing = missingFields(req.body, ['toolId', 'borrower', 'message']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
   const tool = await Tool.findById(req.body.toolId);
   if (!tool) return res.status(404).json({ error: 'Tool not found' });
-  if (!tool.available) return res.status(400).json({ error: 'This tool is already borrowed.' });
+  if (!tool.available) return res.status(400).json({ error: 'Tool is not available' });
 
-  const request = await Request.create({ ...req.body, deposit: Number(req.body.deposit ?? tool.deposit), status: 'pending' });
-  await Notification.create({ userName: tool.owner, title: 'New borrow request', text: `${request.borrower} wants to borrow ${tool.name}.` });
+  const request = await Request.create({
+    toolId: tool._id,
+    borrower: req.body.borrower,
+    message: req.body.message,
+    deposit: Number(req.body.deposit ?? tool.deposit),
+    status: 'pending'
+  });
+
+  await Notification.create({
+    userName: tool.owner,
+    title: 'New borrow request',
+    text: `${request.borrower} wants to borrow ${tool.name}`
+  });
+
   res.status(201).json(request);
 });
 
-route('patch', '/api/requests/:id', async (req, res) => {
-  const request = await Request.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-  if (!request) return res.status(404).json({ error: 'Request not found' });
-  res.json(request);
-});
-
 route('patch', '/api/requests/:id/status', async (req, res) => {
-  const request = await Request.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true, runValidators: true }).populate('toolId');
+  const request = await Request.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true }).populate('toolId');
   if (!request) return res.status(404).json({ error: 'Request not found' });
-  if (request.toolId && ['approved', 'returned'].includes(request.status)) {
-    await Tool.findByIdAndUpdate(request.toolId._id, { available: request.status === 'returned' });
-  }
   res.json(request);
 });
 
 route('patch', '/api/requests/:id/approve', async (req, res) => {
-  req.body.status = 'approved';
   const request = await Request.findByIdAndUpdate(req.params.id, { status: 'approved' }, { new: true }).populate('toolId');
   if (!request) return res.status(404).json({ error: 'Request not found' });
   if (request.toolId) await Tool.findByIdAndUpdate(request.toolId._id, { available: false });
@@ -350,67 +384,22 @@ route('delete', '/api/requests/:id', async (req, res) => {
   res.json({ message: 'Request deleted' });
 });
 
-route('get', '/api/users', async (req, res) => {
-  const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();
-  res.json(users);
-});
-
-route('get', '/api/users/admins', async (req, res) => {
-  res.json(await User.find({ role: 'admin' }).select('-password').lean());
-});
-
-route('get', '/api/users/customers', async (req, res) => {
-  res.json(await User.find({ role: 'customer' }).select('-password').lean());
-});
-
-route('get', '/api/users/:id', async (req, res) => {
-  const user = await User.findById(req.params.id).select('-password').lean();
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(user);
-});
-
-route('post', '/api/users', async (req, res) => {
-  const missing = requiredFields(req.body, ['name', 'email', 'password']);
-  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
-  const user = await User.create({ ...req.body, password: await hashPassword(req.body.password) });
-  res.status(201).json({ id: user._id, name: user.name, email: user.email, role: user.role });
-});
-
-route('patch', '/api/users/:id', async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).select('-password');
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(user);
-});
-
-route('patch', '/api/users/:id/role', async (req, res) => {
-  const user = await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true, runValidators: true }).select('-password');
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json(user);
-});
-
-route('delete', '/api/users/:id', async (req, res) => {
-  const user = await User.findByIdAndDelete(req.params.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ message: 'User deleted' });
-});
-
-route('get', '/api/favorites', async (req, res) => {
-  res.json(await Favorite.find().populate('toolId').sort({ createdAt: -1 }).lean());
-});
-
+// Favorite APIs
 route('get', '/api/favorites/:userName', async (req, res) => {
-  res.json(await Favorite.find({ userName: req.params.userName }).populate('toolId').lean());
+  res.json(await Favorite.find({ userName: req.params.userName }).populate('toolId').sort({ createdAt: -1 }));
 });
 
 route('post', '/api/favorites', async (req, res) => {
-  const favorite = await Favorite.create({ userName: req.body.userName, toolId: req.body.toolId });
-  res.status(201).json(favorite);
-});
+  const missing = missingFields(req.body, ['userName', 'toolId']);
+  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
 
-route('delete', '/api/favorites/:id', async (req, res) => {
-  const favorite = await Favorite.findByIdAndDelete(req.params.id);
-  if (!favorite) return res.status(404).json({ error: 'Favorite not found' });
-  res.json({ message: 'Favorite removed' });
+  const favorite = await Favorite.findOneAndUpdate(
+    { userName: req.body.userName, toolId: req.body.toolId },
+    { userName: req.body.userName, toolId: req.body.toolId },
+    { upsert: true, new: true }
+  );
+
+  res.status(201).json(favorite);
 });
 
 route('delete', '/api/favorites/:userName/:toolId', async (req, res) => {
@@ -418,22 +407,13 @@ route('delete', '/api/favorites/:userName/:toolId', async (req, res) => {
   res.json({ message: 'Favorite removed' });
 });
 
-route('get', '/api/reviews', async (req, res) => {
-  res.json(await Review.find().populate('toolId').sort({ createdAt: -1 }).lean());
-});
-
+// Review APIs
 route('get', '/api/reviews/tool/:toolId', async (req, res) => {
-  res.json(await Review.find({ toolId: req.params.toolId }).sort({ createdAt: -1 }).lean());
-});
-
-route('get', '/api/reviews/average/:toolId', async (req, res) => {
-  const reviews = await Review.find({ toolId: req.params.toolId }).lean();
-  const average = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
-  res.json({ count: reviews.length, average: Number(average.toFixed(1)) });
+  res.json(await Review.find({ toolId: req.params.toolId }).sort({ createdAt: -1 }));
 });
 
 route('post', '/api/reviews', async (req, res) => {
-  const missing = requiredFields(req.body, ['toolId', 'reviewer', 'rating']);
+  const missing = missingFields(req.body, ['toolId', 'reviewer', 'rating']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
   res.status(201).json(await Review.create(req.body));
 });
@@ -444,48 +424,20 @@ route('delete', '/api/reviews/:id', async (req, res) => {
   res.json({ message: 'Review deleted' });
 });
 
-route('get', '/api/messages', async (req, res) => {
-  res.json(await Message.find().sort({ createdAt: -1 }).lean());
-});
-
-route('get', '/api/messages/thread/:requestId', async (req, res) => {
-  res.json(await Message.find({ requestId: req.params.requestId }).sort({ createdAt: 1 }).lean());
-});
-
+// Message APIs
 route('get', '/api/messages/inbox/:userName', async (req, res) => {
-  res.json(await Message.find({ receiver: req.params.userName }).sort({ createdAt: -1 }).lean());
+  res.json(await Message.find({ receiver: req.params.userName }).sort({ createdAt: -1 }));
 });
 
 route('post', '/api/messages', async (req, res) => {
-  const missing = requiredFields(req.body, ['sender', 'receiver', 'text']);
+  const missing = missingFields(req.body, ['sender', 'receiver', 'text']);
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
   res.status(201).json(await Message.create(req.body));
 });
 
-route('patch', '/api/messages/:id/read', async (req, res) => {
-  const message = await Message.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
-  if (!message) return res.status(404).json({ error: 'Message not found' });
-  res.json(message);
-});
-
-route('delete', '/api/messages/:id', async (req, res) => {
-  const message = await Message.findByIdAndDelete(req.params.id);
-  if (!message) return res.status(404).json({ error: 'Message not found' });
-  res.json({ message: 'Message deleted' });
-});
-
-route('get', '/api/notifications', async (req, res) => {
-  res.json(await Notification.find().sort({ createdAt: -1 }).lean());
-});
-
+// Notification APIs
 route('get', '/api/notifications/:userName', async (req, res) => {
-  res.json(await Notification.find({ userName: req.params.userName }).sort({ createdAt: -1 }).lean());
-});
-
-route('post', '/api/notifications', async (req, res) => {
-  const missing = requiredFields(req.body, ['userName', 'title', 'text']);
-  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
-  res.status(201).json(await Notification.create(req.body));
+  res.json(await Notification.find({ userName: req.params.userName }).sort({ createdAt: -1 }));
 });
 
 route('patch', '/api/notifications/:id/read', async (req, res) => {
@@ -494,90 +446,38 @@ route('patch', '/api/notifications/:id/read', async (req, res) => {
   res.json(notification);
 });
 
-route('delete', '/api/notifications/:id', async (req, res) => {
-  const notification = await Notification.findByIdAndDelete(req.params.id);
-  if (!notification) return res.status(404).json({ error: 'Notification not found' });
-  res.json({ message: 'Notification deleted' });
-});
-
-route('get', '/api/dashboard', async (req, res) => {
-  const requests = await Request.find().sort({ createdAt: -1 }).populate('toolId').lean();
-  res.json({
-    approved: requests.filter((item) => item.status === 'approved').length,
-    pending: requests.filter((item) => item.status === 'pending').length,
-    completed: requests.filter((item) => item.status === 'returned').length,
-    requests: requests.slice(0, 5)
-  });
-});
-
+// Admin APIs
 route('get', '/api/admin/stats', async (req, res) => {
-  const [totalTools, availableCount, borrowedCount, pendingRequests, approvedRequests, completedReturns, users] = await Promise.all([
+  const [users, tools, availableTools, requests, pendingRequests, reviews] = await Promise.all([
+    User.countDocuments(),
     Tool.countDocuments(),
     Tool.countDocuments({ available: true }),
-    Tool.countDocuments({ available: false }),
+    Request.countDocuments(),
     Request.countDocuments({ status: 'pending' }),
-    Request.countDocuments({ status: 'approved' }),
-    Request.countDocuments({ status: 'returned' }),
-    User.countDocuments()
+    Review.countDocuments()
   ]);
 
-  res.json({ totalTools, availableCount, borrowedCount, pendingRequests, approvedRequests, completedReturns, users });
-});
-
-route('get', '/api/admin/activity', async (req, res) => {
-  const [tools, requests, reviews] = await Promise.all([
-    Tool.find().sort({ createdAt: -1 }).limit(3).lean(),
-    Request.find().sort({ createdAt: -1 }).limit(3).populate('toolId').lean(),
-    Review.find().sort({ createdAt: -1 }).limit(3).lean()
-  ]);
-  res.json({ tools, requests, reviews });
-});
-
-route('get', '/api/admin/inventory-value', async (req, res) => {
-  const tools = await Tool.find().lean();
-  res.json({ depositTotal: tools.reduce((sum, tool) => sum + tool.deposit, 0) });
-});
-
-route('get', '/api/admin/route-count', (req, res) => {
-  res.json({ totalRoutes: apiRoutes.length });
+  res.json({ users, tools, availableTools, requests, pendingRequests, reviews });
 });
 
 route('post', '/api/admin/reset-sample', async (req, res) => {
-  await Promise.all([Tool.deleteMany({}), Request.deleteMany({}), Review.deleteMany({}), Favorite.deleteMany({}), Message.deleteMany({}), Notification.deleteMany({})]);
+  await Promise.all([
+    User.deleteMany({}),
+    Tool.deleteMany({}),
+    Request.deleteMany({}),
+    Favorite.deleteMany({}),
+    Review.deleteMany({}),
+    Message.deleteMany({}),
+    Notification.deleteMany({})
+  ]);
+
   await seedSampleData();
-  res.json({ message: 'Sample data reset' });
+  res.json({ message: 'Sample data reset successfully' });
 });
 
-route('get', '/api/reports/summary', async (req, res) => {
-  const [tools, requests, reviews] = await Promise.all([Tool.find().lean(), Request.find().lean(), Review.find().lean()]);
-  res.json({ toolCount: tools.length, requestCount: requests.length, reviewCount: reviews.length });
-});
-
-route('get', '/api/reports/popular-tools', async (req, res) => {
-  const requests = await Request.find().populate('toolId').lean();
-  const counts = requests.reduce((map, request) => {
-    const name = request.toolId?.name || 'Unknown tool';
-    map[name] = (map[name] || 0) + 1;
-    return map;
-  }, {});
-  res.json(Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count));
-});
-
-route('get', '/api/reports/open-requests', async (req, res) => {
-  res.json(await Request.find({ status: { $in: ['pending', 'approved'] } }).populate('toolId').lean());
-});
-
-route('post', '/api/payments/deposit-preview', (req, res) => {
-  const deposit = Number(req.body.deposit || 0);
-  res.json({ deposit, serviceFee: 0, totalHold: deposit, chargedNow: 0 });
-});
-
-route('post', '/api/support/contact', async (req, res) => {
-  const missing = requiredFields(req.body, ['name', 'message']);
-  if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` });
-  await Notification.create({ userName: 'Admin', title: `Support message from ${req.body.name}`, text: req.body.message });
-  res.status(201).json({ message: 'Support message saved' });
-});
+if (apiRoutes.length !== 45) {
+  throw new Error(`API route count should be 45, currently ${apiRoutes.length}`);
+}
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
@@ -587,7 +487,7 @@ async function startServer() {
   await connectDatabase();
   await seedSampleData();
   app.listen(port, () => {
-    console.log(`API listening on http://localhost:${port}`);
+    console.log(`API running on http://localhost:${port}`);
     console.log(`${apiRoutes.length} API routes ready`);
   });
 }

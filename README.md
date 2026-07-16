@@ -1,6 +1,6 @@
 # ToolPool
 
-ToolPool is a neighbourhood tool-sharing frontend built with React and Vite. It works as a standalone demo, so every main flow can be presented without starting the backend.
+ToolPool is a neighbourhood tool-sharing MERN project. The frontend is built with React and Vite, and the backend is built with Node.js, Express, MongoDB and Mongoose.
 
 ## Demo features
 
@@ -9,7 +9,7 @@ ToolPool is a neighbourhood tool-sharing frontend built with React and Vite. It 
 - Track personal requests and their status
 - Approve, decline and complete requests from the lender dashboard
 - Add a new tool to the workshop
-- LocalStorage persistence across refreshes
+- Dynamic backend APIs for users, tools, requests, reviews, favorites, messages, notifications and admin
 - Responsive desktop and mobile interface
 
 ## Run locally
@@ -19,7 +19,16 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Open frontend: `http://localhost:5173`
+
+Open backend API: `http://localhost:4000/api`
+
+Demo admin login:
+
+```txt
+email: agrim@example.com
+password: 123456
+```
 
 ## Production build
 
@@ -27,4 +36,4 @@ Open `http://localhost:5173`.
 npm run build
 ```
 
-The current demo uses local data so the frontend remains fully usable even when the API server is unavailable.
+The backend has exactly 45 self-made APIs. See `API_LIST.md` for the full list.
