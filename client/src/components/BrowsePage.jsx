@@ -10,7 +10,8 @@ function BrowsePage({
   onCategoryChange,
   availableOnly,
   onAvailabilityChange,
-  onBorrow
+  onBorrow,
+  loading
 }) {
   return (
     <main>
@@ -67,7 +68,9 @@ function BrowsePage({
           </select>
         </div>
 
-        {tools.length > 0 ? (
+        {loading ? (
+          <div className="empty-state"><strong>Loading tools</strong><p>Fetching latest tools from backend.</p></div>
+        ) : tools.length > 0 ? (
           <div className="tool-grid">
             {tools.map((tool) => <ToolCard key={tool.id} tool={tool} onBorrow={onBorrow} />)}
           </div>

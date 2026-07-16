@@ -1,5 +1,6 @@
 function Status({ status }) {
-  return <span className={`status status-${status.toLowerCase()}`}>{status}</span>;
+  const label = status === 'Rejected' ? 'Declined' : status;
+  return <span className={`status status-${label.toLowerCase()}`}>{label}</span>;
 }
 
 export default Status;

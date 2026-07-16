@@ -2,9 +2,10 @@ import PageTitle from './PageTitle';
 import Status from './Status';
 import { initials } from '../helpers';
 
-function LenderPage({ tools, requests, onUpdate, onAdd }) {
-  const lenderRequests = requests.filter((request) => request.borrower !== 'Agrim Jain');
-  const ownTools = tools.filter((tool) => tool.owner === 'Agrim Jain');
+function LenderPage({ user, tools, requests, onUpdate, onAdd }) {
+  const currentName = user?.name || 'Guest User';
+  const lenderRequests = requests.filter((request) => request.borrower !== currentName);
+  const ownTools = tools.filter((tool) => tool.owner === currentName);
 
   return (
     <main className="page-wrap">
@@ -18,9 +19,9 @@ function LenderPage({ tools, requests, onUpdate, onAdd }) {
       </div>
 
       <div className="stats-strip">
-        <div><strong>{ownTools.length || 3}</strong><span>Listed tools</span></div>
+        <div><strong>{ownTools.length}</strong><span>Listed tools</span></div>
         <div><strong>{lenderRequests.filter((item) => item.status === 'Pending').length}</strong><span>New requests</span></div>
-        <div><strong>12</strong><span>Successful shares</span></div>
+        <div><strong>{lenderRequests.filter((item) => item.status === 'Returned').length}</strong><span>Successful shares</span></div>
         <div><strong>4.9</strong><span>Neighbour rating</span></div>
       </div>
 

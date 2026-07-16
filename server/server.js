@@ -339,6 +339,8 @@ route('post', '/api/requests', async (req, res) => {
     toolId: tool._id,
     borrower: req.body.borrower,
     message: req.body.message,
+    fromDate: req.body.fromDate || '',
+    toDate: req.body.toDate || '',
     deposit: Number(req.body.deposit ?? tool.deposit),
     status: 'pending'
   });
