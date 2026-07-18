@@ -22,9 +22,13 @@ function ToolCard({ tool, onBorrow }) {
 
         <div className="tool-footer">
           <span><strong>₹{tool.deposit}</strong><small> refundable deposit</small></span>
-          <button disabled={!tool.available} onClick={() => onBorrow(tool)}>
-            {tool.available ? 'Request tool' : 'Unavailable'}
-          </button>
+          {onBorrow ? (
+            <button disabled={!tool.available} onClick={() => onBorrow(tool)}>
+              {tool.available ? 'Request tool' : 'Unavailable'}
+            </button>
+          ) : (
+            <button disabled>Your listing</button>
+          )}
         </div>
       </div>
     </article>

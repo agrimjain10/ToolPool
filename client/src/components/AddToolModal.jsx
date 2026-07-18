@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { categories } from '../data';
 
-function AddToolModal({ onClose, onSubmit }) {
+function AddToolModal({ onClose, onSubmit, categories }) {
+  const categoryOptions = categories.length ? categories.filter((item) => item !== 'All') : ['Power tools', 'Home repair', 'Gardening', 'Cleaning', 'Outdoor'];
   const [form, setForm] = useState({
     name: '',
     category: 'Power tools',
@@ -10,9 +10,24 @@ function AddToolModal({ onClose, onSubmit }) {
     description: '',
     image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=900&q=85'
   });
+  const [imagePreview, setImagePreview] = useState(form.image);
 
   function updateField(field, value) {
     setForm((currentForm) => ({ ...currentForm, [field]: value }));
+    if (field === 'image') setImagePreview(value);
+  }
+
+  function handleImageUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const nextImage = String(reader.result || '');
+      setForm((currentForm) => ({ ...currentForm, image: nextImage }));
+      setImagePreview(nextImage);
+    };
+    reader.readAsDataURL(file);
   }
 
   function handleSubmit(event) {
@@ -35,7 +50,7 @@ function AddToolModal({ onClose, onSubmit }) {
         <div className="date-grid">
           <label>Category
             <select value={form.category} onChange={(event) => updateField('category', event.target.value)}>
-              {categories.slice(1).map((item) => <option key={item}>{item}</option>)}
+              {categoryOptions.map((item) => <option key={item}>{item}</option>)}
             </select>
           </label>
           <label>Deposit (₹)
@@ -52,6 +67,25 @@ function AddToolModal({ onClose, onSubmit }) {
             required
           />
         </label>
+
+        <label>Image URL
+          <input
+            type="url"
+            value={form.image}
+            onChange={(event) => updateField('image', event.target.value)}
+            placeholder="Paste an image link or upload below"
+          />
+        </label>
+
+        <label>Upload image
+          <input type="file" accept="image/*" onChange={handleImageUpload} />
+        </label>
+
+        {imagePreview && (
+          <div className="image-preview">
+            <img src={imagePreview} alt="Tool preview" />
+          </div>
+        )}
 
         <button className="submit-button" type="submit">Publish tool</button>
       </form>

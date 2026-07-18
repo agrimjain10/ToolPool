@@ -1,6 +1,6 @@
 # ToolPool Backend API List
 
-This backend has exactly 45 self-made Express APIs for the MERN project.
+This backend has exactly 48 self-made Express API routes for the MERN project.
 
 ## Basic
 
@@ -11,8 +11,9 @@ This backend has exactly 45 self-made Express APIs for the MERN project.
 
 3. `POST /api/auth/register`
 4. `POST /api/auth/login`
-5. `POST /api/auth/logout`
-6. `PATCH /api/auth/password/:id`
+5. `GET /api/auth/me`
+6. `POST /api/auth/logout`
+7. `PATCH /api/auth/password/:id`
 
 ## Users
 
@@ -64,15 +65,17 @@ This backend has exactly 45 self-made Express APIs for the MERN project.
 
 ## Messages
 
-40. `GET /api/messages/inbox/:userName`
-41. `POST /api/messages`
+41. `GET /api/messages/request/:requestId/stream` (SSE live chat)
+42. `GET /api/messages/inbox/:userName`
+43. `GET /api/messages/request/:requestId`
+44. `POST /api/messages`
 
 ## Notifications
 
-42. `GET /api/notifications/:userName`
-43. `PATCH /api/notifications/:id/read`
+45. `GET /api/notifications/:userName`
+46. `PATCH /api/notifications/:id/read`
 
 ## Admin
 
-44. `GET /api/admin/stats`
-45. `POST /api/admin/reset-sample`
+47. `GET /api/admin/stats`
+48. `POST /api/admin/reset-sample`

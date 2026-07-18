@@ -1,7 +1,7 @@
 import PageTitle from './PageTitle';
 import Status from './Status';
 
-function MyRequestsPage({ requests, onBrowse }) {
+function MyRequestsPage({ requests, onBrowse, onChat }) {
   return (
     <main className="page-wrap">
       <PageTitle
@@ -20,7 +20,12 @@ function MyRequestsPage({ requests, onBrowse }) {
                 <span>{request.dates}</span>
                 <p>{request.message}</p>
               </div>
-              <Status status={request.status} />
+              <div className="request-actions">
+                <Status status={request.status} />
+                {request.status === 'Approved' && (
+                  <button className="quiet-button" onClick={() => onChat(request)}>Chat</button>
+                )}
+              </div>
             </article>
           ))}
         </div>

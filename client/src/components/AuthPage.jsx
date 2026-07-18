@@ -4,9 +4,8 @@ function AuthPage({ onLogin, onRegister }) {
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({
     name: '',
-    email: 'agrim@example.com',
-    password: '123456',
-    role: 'customer'
+    email: '',
+    password: ''
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -39,7 +38,7 @@ function AuthPage({ onLogin, onRegister }) {
         <div>
           <p className="eyebrow">ToolPool account</p>
           <h1>{mode === 'login' ? 'Login to continue' : 'Create new account'}</h1>
-          <p>Use the demo admin account or register a new neighbour account.</p>
+          <p>Create a real account or sign in to your existing one.</p>
         </div>
 
         <div className="auth-tabs">
@@ -61,15 +60,6 @@ function AuthPage({ onLogin, onRegister }) {
           <label>Password
             <input type="password" value={form.password} onChange={(event) => updateField('password', event.target.value)} required />
           </label>
-
-          {mode === 'register' && (
-            <label>Role
-              <select value={form.role} onChange={(event) => updateField('role', event.target.value)}>
-                <option value="customer">Customer</option>
-                <option value="admin">Admin</option>
-              </select>
-            </label>
-          )}
 
           {error && <div className="form-error">{error}</div>}
           <button className="submit-button" disabled={saving}>{saving ? 'Please wait...' : mode === 'login' ? 'Login' : 'Create account'}</button>

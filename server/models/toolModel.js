@@ -5,6 +5,7 @@ const toolSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     category: { type: String, required: true, trim: true },
     owner: { type: String, required: true, trim: true },
+    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
     location: { type: String, required: true, trim: true },
     distance: { type: String, default: '1 mi' },
     deposit: { type: Number, required: true, default: 0 },

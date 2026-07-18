@@ -1,5 +1,4 @@
 import ToolCard from './ToolCard';
-import { categories } from '../data';
 
 function BrowsePage({
   tools,
@@ -11,19 +10,20 @@ function BrowsePage({
   availableOnly,
   onAvailabilityChange,
   onBorrow,
-  loading
+  loading,
+  categories
 }) {
   return (
     <main>
       <section className="intro-band">
         <div className="intro-copy">
           <p className="eyebrow">Your neighbourhood workshop</p>
-          <h1>Why buy it when a neighbour has it?</h1>
-          <p>Borrow useful things nearby, meet good people, and make a little more room at home.</p>
+          <h1>Build a real borrowing network for your city.</h1>
+          <p>List tools, request what you need, and manage everything through your own MongoDB-backed workspace.</p>
         </div>
         <div className="community-note">
-          <strong>{totalTools + 42} tools</strong>
-          <span>shared by 28 neighbours near you</span>
+          <strong>{totalTools} tools</strong>
+          <span>{totalTools > 0 ? 'currently available in the marketplace' : 'nothing listed yet - be the first to add one'}</span>
         </div>
       </section>
 
@@ -75,7 +75,10 @@ function BrowsePage({
             {tools.map((tool) => <ToolCard key={tool.id} tool={tool} onBorrow={onBorrow} />)}
           </div>
         ) : (
-          <div className="empty-state"><strong>No tools found</strong><p>Try a different category or search term.</p></div>
+          <div className="empty-state">
+            <strong>No tools listed yet</strong>
+            <p>Use the add-tool flow to create the first real listing in your database.</p>
+          </div>
         )}
       </section>
     </main>

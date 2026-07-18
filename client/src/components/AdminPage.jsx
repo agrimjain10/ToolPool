@@ -17,7 +17,7 @@ function AdminPage({ user }) {
       <main className="page-wrap">
         <div className="empty-state">
           <strong>Admin login required</strong>
-          <p>Login with the demo admin account to view this page.</p>
+          <p>Only users with the admin role can view this page.</p>
         </div>
       </main>
     );
