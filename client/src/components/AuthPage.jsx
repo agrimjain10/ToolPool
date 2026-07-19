@@ -36,7 +36,7 @@ function AuthPage({ onLogin, onRegister }) {
     <main className="auth-page">
       <section className="auth-panel">
         <div>
-          <p className="eyebrow">ToolPool account</p>
+          <p className="eyebrow">CampusShare account</p>
           <h1>{mode === 'login' ? 'Login to continue' : 'Create new account'}</h1>
           <p>Create a real account or sign in to your existing one.</p>
         </div>

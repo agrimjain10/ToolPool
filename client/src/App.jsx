@@ -78,7 +78,7 @@ function App() {
   const canSeeAdmin = user?.role === 'admin';
   const ownsTool = (tool) => (tool.ownerId && user?.id && String(tool.ownerId) === String(user.id)) || tool.owner === currentName;
   const myTools = tools.filter(ownsTool);
-  const nearbyTools = tools.filter((tool) => canSeeAdmin || !ownsTool(tool));
+  const nearbyTools = tools.filter((tool) => !ownsTool(tool));
 
   const myRequests = requests.filter((request) => request.borrower === currentName);
   const filteredTools = useMemo(() => {
@@ -263,7 +263,7 @@ function App() {
       {authReady && view === 'login' && <AuthPage onLogin={handleLogin} onRegister={handleRegister} />}
       {authReady && view === 'browse' && user && (
         <BrowsePage
-          tools={canSeeAdmin ? filteredTools : filteredTools.filter((tool) => !ownsTool(tool))}
+          tools={filteredTools.filter((tool) => !ownsTool(tool))}
           totalTools={nearbyTools.length}
           query={query}
           onQueryChange={setQuery}
