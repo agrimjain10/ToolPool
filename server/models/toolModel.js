@@ -11,6 +11,7 @@ const toolSchema = new mongoose.Schema(
     deposit: { type: Number, required: true, default: 0 },
     available: { type: Boolean, default: true },
     description: { type: String, required: true, trim: true },
+    condition: { type: String, default: 'Good', enum: ['Like New', 'Good', 'Fair', 'Needs Repair'] },
     image: { type: String, default: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?auto=format&fit=crop&w=900&q=80' }
   },
   { timestamps: true }

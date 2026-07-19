@@ -227,6 +227,7 @@ function App() {
         distance: 'Your listing',
         deposit: tool.deposit,
         description: tool.description,
+        condition: tool.condition,
         image: tool.image
       });
 

@@ -8,6 +8,7 @@ function AddToolModal({ onClose, onSubmit, categories }) {
     area: 'Vijay Nagar',
     deposit: 400,
     description: '',
+    condition: 'Good',
     image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=900&q=85'
   });
   const [imagePreview, setImagePreview] = useState(form.image);
@@ -51,6 +52,14 @@ function AddToolModal({ onClose, onSubmit, categories }) {
           <label>Category
             <select value={form.category} onChange={(event) => updateField('category', event.target.value)}>
               {categoryOptions.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+          <label>Condition
+            <select value={form.condition} onChange={(event) => updateField('condition', event.target.value)}>
+              <option>Like New</option>
+              <option>Good</option>
+              <option>Fair</option>
+              <option>Needs Repair</option>
             </select>
           </label>
           <label>Deposit (₹)

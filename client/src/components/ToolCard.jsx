@@ -11,7 +11,12 @@ function ToolCard({ tool, onBorrow }) {
       </div>
 
       <div className="tool-content">
-        <div className="tool-category">{tool.category}</div>
+        <div className="tool-category">
+          {tool.category}
+          <span style={{ marginLeft: '8px', padding: '2px 6px', background: '#e0e0e0', color: '#333', borderRadius: '4px', fontSize: '10px' }}>
+            {tool.condition || 'Good'}
+          </span>
+        </div>
         <h3>{tool.name}</h3>
         <p className="tool-description">{tool.description}</p>
 
