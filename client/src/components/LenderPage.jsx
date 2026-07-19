@@ -15,7 +15,7 @@ function LenderPage({ user, tools, myTools, requests, onBorrow, onUpdate, onAdd,
       <div className="title-actions">
         <PageTitle
           eyebrow="Lender dashboard"
-          title="My inventory"
+          title="My workshop"
           copy="Manage your tools and respond to neighbours."
         />
         <button className="primary-action" onClick={onAdd}>+ Add a tool</button>

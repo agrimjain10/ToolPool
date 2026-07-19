@@ -1,1 +1,1 @@
-export const categories = ['All', 'Electronics', 'Books & Notes', 'Lab Equipment', 'Calculators', 'Dorm Essentials', 'Other'];
+export const categories = ['All', 'Power tools', 'Home repair', 'Gardening', 'Cleaning', 'Outdoor'];

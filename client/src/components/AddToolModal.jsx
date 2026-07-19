@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 function AddToolModal({ onClose, onSubmit, categories }) {
-  const categoryOptions = categories.length ? categories.filter((item) => item !== 'All') : ['Electronics', 'Books & Notes', 'Lab Equipment', 'Calculators', 'Dorm Essentials', 'Other'];
+  const categoryOptions = categories.length ? categories.filter((item) => item !== 'All') : ['Power tools', 'Home repair', 'Gardening', 'Cleaning', 'Outdoor'];
   const [form, setForm] = useState({
     name: '',
-    category: 'Electronics',
-    area: 'Hostel Block A',
+    category: 'Power tools',
+    area: 'Vijay Nagar',
     deposit: 400,
     description: '',
     condition: 'Good',
@@ -40,7 +40,7 @@ function AddToolModal({ onClose, onSubmit, categories }) {
     <div className="modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <form className="modal" onSubmit={handleSubmit}>
         <div className="modal-head">
-          <div><p className="eyebrow">Your inventory</p><h2>List an item</h2></div>
+          <div><p className="eyebrow">Your workshop</p><h2>List a tool</h2></div>
           <button type="button" className="close-button" onClick={onClose} aria-label="Close">×</button>
         </div>
 

@@ -17,8 +17,8 @@ function BrowsePage({
     <main>
       <section className="intro-band">
         <div className="intro-copy">
-          <p className="eyebrow">Your campus sharing hub</p>
-          <h1>Build a real borrowing network for your campus.</h1>
+          <p className="eyebrow">Your neighbourhood workshop</p>
+          <h1>Build a real borrowing network for your city.</h1>
           <p>List tools, request what you need, and manage everything through your own MongoDB-backed workspace.</p>
         </div>
         <div className="community-note">
