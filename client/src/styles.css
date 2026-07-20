@@ -15,10 +15,15 @@
   --mint: #e3f1ea;
   --coral: #c65c40;
   --surface: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(27, 43, 36, 0.06);
+  --shadow-md: 0 4px 16px rgba(27, 43, 36, 0.08);
+  --shadow-lg: 0 12px 32px rgba(27, 43, 36, 0.1);
+  --radius: 10px;
+  --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; min-width: 320px; background: #f4f6f5; color: var(--ink); }
+body { margin: 0; min-width: 320px; background: #f4f6f5; color: var(--ink); -webkit-font-smoothing: antialiased; }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(23, 107, 77, 0.22); outline-offset: 2px; }
@@ -28,7 +33,8 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   position: sticky; top: 0; z-index: 20;
   height: 72px; padding: 0 4vw;
   display: grid; grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr); align-items: center;
-  background: rgba(255, 255, 255, 0.96); border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92); border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
 }
 .brand-button { display: flex; align-items: center; gap: 10px; justify-self: start; padding: 0; background: none; border: 0; color: var(--ink); text-align: left; }
 .brand-button > span:last-child { display: flex; flex-direction: column; }
@@ -42,12 +48,12 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .main-nav button.active::after { background: var(--green); }
 .account-actions { justify-self: end; display: flex; gap: 10px; align-items: center; }
 .account-role { color: var(--muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
-.add-button, .primary-action, .submit-button { border: 1px solid var(--green); border-radius: 6px; background: var(--green); color: white; padding: 10px 16px; font-weight: 700; }
-.add-button:hover, .primary-action:hover, .submit-button:hover, .tool-footer button:hover, .lender-actions button:hover { background: var(--green-dark); }
+.add-button, .primary-action, .submit-button { border: 1px solid var(--green); border-radius: var(--radius); background: var(--green); color: white; padding: 10px 16px; font-weight: 700; transition: all var(--transition); }
+.add-button:hover, .primary-action:hover, .submit-button:hover, .tool-footer button:hover, .lender-actions button:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
 .add-button span { font-size: 19px; line-height: 0; margin-right: 3px; }
 .avatar { width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fee5d8; color: #8d3d28; font-weight: 800; }
-.text-action { border: 1px solid #cfd7d3; border-radius: 6px; background: white; color: #46514c; padding: 9px 12px; font-weight: 700; }
-.text-action:hover { border-color: var(--green); color: var(--green); }
+.text-action { border: 1px solid #cfd7d3; border-radius: var(--radius); background: white; color: #46514c; padding: 9px 12px; font-weight: 700; transition: all var(--transition); }
+.text-action:hover { border-color: var(--green); color: var(--green); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
 .auth-page { min-height: calc(100vh - 72px); display: grid; place-items: center; padding: 34px 20px; }
 .auth-panel { width: min(460px, 100%); display: flex; flex-direction: column; gap: 20px; padding: 28px; background: white; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 45px rgba(27, 43, 36, 0.08); }
@@ -97,14 +103,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .section-heading p { margin: 3px 0 0; color: var(--muted); font-size: 14px; }
 .section-heading select { border: 1px solid #cfd7d3; border-radius: 6px; background: white; padding: 8px 11px; color: #46514c; }
 
-.tool-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.tool-card { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; transition: transform 160ms ease, box-shadow 160ms ease; }
-.tool-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(28, 44, 37, 0.1); }
+.tool-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.tool-card { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); transition: transform var(--transition), box-shadow var(--transition); box-shadow: var(--shadow-sm); }
+.tool-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .tool-image-wrap { position: relative; aspect-ratio: 16 / 9; background: #e8ecea; overflow: hidden; }
 .tool-image-wrap img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform 250ms ease; }
 .tool-card:hover img { transform: scale(1.025); }
-.availability { position: absolute; top: 12px; left: 12px; padding: 5px 8px; border-radius: 4px; background: #e5f5ec; color: #176343; font-size: 11px; font-weight: 800; }
-.availability.busy { background: #f2ece9; color: #7a655e; }
+.availability { position: absolute; top: 12px; left: 12px; padding: 5px 10px; border-radius: 6px; background: rgba(229, 245, 236, 0.92); color: #176343; font-size: 11px; font-weight: 800; backdrop-filter: blur(6px); }
+.availability.busy { background: rgba(242, 236, 233, 0.92); color: #7a655e; }
 .tool-content { padding: 17px; }
 .tool-category { color: var(--coral); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .tool-content h3 { margin: 4px 0 7px; font-family: 'Manrope'; font-size: 18px; }
@@ -117,14 +123,14 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .tool-footer > span { display: flex; flex-direction: column; }
 .tool-footer strong { font-size: 16px; }
 .tool-footer small { color: var(--muted); font-size: 10px; }
-.tool-footer button, .lender-actions button, .empty-state button { min-height: 36px; border: 1px solid var(--green); border-radius: 5px; background: var(--green); color: white; padding: 7px 12px; font-weight: 700; font-size: 12px; }
+.tool-footer button, .lender-actions button, .empty-state button { min-height: 36px; border: 1px solid var(--green); border-radius: 8px; background: var(--green); color: white; padding: 7px 14px; font-weight: 700; font-size: 12px; transition: all var(--transition); }
 .tool-footer button:disabled { cursor: not-allowed; border-color: #d6dcda; background: #e7ebe9; color: #89928e; }
 
 .page-title { padding: 25px 0 22px; }
 .page-title h1 { font-size: 34px; }
 .page-title > p:last-child, .profile-head > div:last-child > p:last-child { margin: 7px 0 0; color: var(--muted); }
 .title-actions { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); background: white; border: 1px solid var(--line); border-radius: 8px; }
+.stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); background: white; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 .stats-strip > div { padding: 20px 24px; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
 .stats-strip > div:last-child { border: 0; }
 .stats-strip strong { font-family: 'Manrope'; font-size: 25px; color: var(--green); }

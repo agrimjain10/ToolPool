@@ -1,81 +1,112 @@
-# ToolPool Backend API List
+# ToolPool API Reference
 
-This backend has exactly 48 self-made Express API routes for the MERN project.
+> This backend has **48 self-made Express API routes** organized into 9 route files for easy navigation.
 
-## Basic
+## Quick Overview
 
-1. `GET /api`
-2. `GET /api/health`
+| Module | Route File | Base Path | Routes |
+|--------|-----------|-----------|--------|
+| Basic | server.js | /api | 2 |
+| Auth | authRoutes.js | /api/auth | 5 |
+| Users | userRoutes.js | /api/users | 7 |
+| Tools | toolRoutes.js | /api/tools | 10 |
+| Requests | requestRoutes.js | /api/requests | 10 |
+| Favorites | favoriteRoutes.js | /api/favorites | 3 |
+| Reviews | reviewRoutes.js | /api/reviews | 3 |
+| Messages | messageRoutes.js | /api/messages | 4 |
+| Notifications | notificationRoutes.js | /api/notifications | 2 |
+| Admin | adminRoutes.js | /api/admin | 2 |
 
-## Auth
+## 1. Basic (2)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 1 | GET | `/api` | API info and route list | 🔓 No |
+| 2 | GET | `/api/health` | Health check | 🔓 No |
 
-3. `POST /api/auth/register`
-4. `POST /api/auth/login`
-5. `GET /api/auth/me`
-6. `POST /api/auth/logout`
-7. `PATCH /api/auth/password/:id`
+## 2. Auth (5)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 3 | POST | `/api/auth/register` | Register new user | 🔓 No |
+| 4 | POST | `/api/auth/login` | Login with email/password | 🔓 No |
+| 5 | GET | `/api/auth/me` | Get current logged-in user | 🔒 Yes |
+| 6 | POST | `/api/auth/logout` | Logout and destroy session | 🔒 Yes |
+| 7 | PATCH | `/api/auth/password/:id` | Change password | 🔒 Yes |
 
-## Users
+## 3. Users (7)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 8 | GET | `/api/users` | List all users | 🔒 Admin |
+| 9 | GET | `/api/users/admins` | List admin users | 🔒 Admin |
+| 10 | GET | `/api/users/customers` | List customer users | 🔒 Admin |
+| 11 | GET | `/api/users/:id` | Get single user | 🔒 Admin |
+| 12 | POST | `/api/users` | Create new user | 🔒 Admin |
+| 13 | PATCH | `/api/users/:id` | Update user | 🔒 Admin |
+| 14 | DELETE| `/api/users/:id` | Delete user | 🔒 Admin |
 
-7. `GET /api/users`
-8. `GET /api/users/admins`
-9. `GET /api/users/customers`
-10. `GET /api/users/:id`
-11. `POST /api/users`
-12. `PATCH /api/users/:id`
-13. `DELETE /api/users/:id`
+## 4. Tools (10)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 15 | GET | `/api/tools` | Browse tools with filters | 🔒 Yes |
+| 16 | GET | `/api/tools/featured` | Get 6 cheapest available tools | 🔓 No |
+| 17 | GET | `/api/tools/categories` | Get distinct categories | 🔓 No |
+| 18 | GET | `/api/tools/available` | Get all available tools | 🔓 No |
+| 19 | GET | `/api/tools/owner/:owner`| Get tools by owner name | 🔓 No |
+| 20 | GET | `/api/tools/:id` | Get single tool | 🔓 No |
+| 21 | POST | `/api/tools` | Create a new tool listing | 🔒 Yes |
+| 22 | PATCH | `/api/tools/:id` | Update tool details | 🔒 Owner |
+| 23 | DELETE| `/api/tools/:id` | Delete tool and related data | 🔒 Owner |
+| 24 | PATCH | `/api/tools/:id/availability` | Toggle tool availability | 🔒 Owner |
 
-## Tools
+## 5. Borrow Requests (10)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 25 | GET | `/api/requests` | List requests (filtered by role) | 🔒 Yes |
+| 26 | GET | `/api/requests/pending` | List pending requests | 🔒 Yes |
+| 27 | GET | `/api/requests/mine/:borrower`| Get borrower's requests | 🔒 Yes |
+| 28 | GET | `/api/requests/:id` | Get single request | 🔒 Yes |
+| 29 | POST | `/api/requests` | Create borrow request | 🔒 Yes |
+| 30 | PATCH | `/api/requests/:id/status` | Update request status | 🔒 Yes |
+| 31 | PATCH | `/api/requests/:id/approve`| Approve request (marks tool unavailable) | 🔒 Owner |
+| 32 | PATCH | `/api/requests/:id/reject` | Reject request | 🔒 Owner |
+| 33 | PATCH | `/api/requests/:id/return` | Mark tool returned (marks tool available) | 🔒 Owner |
+| 34 | DELETE| `/api/requests/:id` | Delete request | 🔒 Yes |
 
-14. `GET /api/tools`
-15. `GET /api/tools/featured`
-16. `GET /api/tools/categories`
-17. `GET /api/tools/available`
-18. `GET /api/tools/owner/:owner`
-19. `GET /api/tools/:id`
-20. `POST /api/tools`
-21. `PATCH /api/tools/:id`
-22. `DELETE /api/tools/:id`
-23. `PATCH /api/tools/:id/availability`
+## 6. Favorites (3)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 35 | GET | `/api/favorites/:userName` | Get user's favorites | 🔓 No |
+| 36 | POST | `/api/favorites` | Add to favorites | 🔓 No |
+| 37 | DELETE| `/api/favorites/:userName/:toolId`| Remove from favorites | 🔓 No |
 
-## Borrow Requests
+## 7. Reviews (3)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 38 | GET | `/api/reviews/tool/:toolId`| Get reviews for a tool | 🔓 No |
+| 39 | POST | `/api/reviews` | Create a review | 🔓 No |
+| 40 | DELETE| `/api/reviews/:id` | Delete a review | 🔓 No |
 
-24. `GET /api/requests`
-25. `GET /api/requests/pending`
-26. `GET /api/requests/mine/:borrower`
-27. `GET /api/requests/:id`
-28. `POST /api/requests`
-29. `PATCH /api/requests/:id/status`
-30. `PATCH /api/requests/:id/approve`
-31. `PATCH /api/requests/:id/reject`
-32. `PATCH /api/requests/:id/return`
-33. `DELETE /api/requests/:id`
+## 8. Messages (4)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 41 | GET | `/api/messages/request/:requestId/stream` | SSE live chat stream | 🔒 Yes |
+| 42 | GET | `/api/messages/inbox/:userName`| Get user's inbox | 🔒 Yes |
+| 43 | GET | `/api/messages/request/:requestId`| Get chat messages | 🔒 Yes |
+| 44 | POST | `/api/messages` | Send a message | 🔒 Yes |
 
-## Favorites
+## 9. Notifications (2)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 45 | GET | `/api/notifications/:userName`| Get user's notifications | 🔓 No |
+| 46 | PATCH | `/api/notifications/:id/read` | Mark notification as read | 🔓 No |
 
-34. `GET /api/favorites/:userName`
-35. `POST /api/favorites`
-36. `DELETE /api/favorites/:userName/:toolId`
+## 10. Admin (2)
+| # | Method | Endpoint | Description | Auth |
+|---|--------|----------|-------------|------|
+| 47 | GET | `/api/admin/stats` | Get platform statistics | 🔒 Admin |
+| 48 | POST | `/api/admin/reset-sample` | Reset all sample data | 🔒 Admin |
 
-## Reviews
-
-37. `GET /api/reviews/tool/:toolId`
-38. `POST /api/reviews`
-39. `DELETE /api/reviews/:id`
-
-## Messages
-
-41. `GET /api/messages/request/:requestId/stream` (SSE live chat)
-42. `GET /api/messages/inbox/:userName`
-43. `GET /api/messages/request/:requestId`
-44. `POST /api/messages`
-
-## Notifications
-
-45. `GET /api/notifications/:userName`
-46. `PATCH /api/notifications/:id/read`
-
-## Admin
-
-47. `GET /api/admin/stats`
-48. `POST /api/admin/reset-sample`
+## Testing APIs
+You can test these APIs using:
+- **Browser**: Visit `http://localhost:4000/api` to see all routes.
+- **Postman**: Import the base URL `http://localhost:4000` and test endpoints.
+- **VS Code**: Use the REST Client extension.
