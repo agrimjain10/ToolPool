@@ -14,10 +14,10 @@ async function connectDatabase() {
   } catch (error) {
     if (usingExplicitUri) {
       console.error('Database connection failed:', error.message);
-      throw error;
+      console.warn('Falling back to an in-memory database for this session so the app remains running.');
+    } else {
+      console.warn(`Local MongoDB was not reachable at ${mongoUri}. Falling back to an in-memory database for this session.`);
     }
-
-    console.warn(`Local MongoDB was not reachable at ${mongoUri}. Falling back to an in-memory database for this session.`);
   }
 
   try {
