@@ -4,9 +4,7 @@ import { initials } from '../helpers';
 
 function LenderPage({ user, tools, myTools, requests, onBorrow, onUpdate, onAdd, onChat }) {
   const currentName = user?.name || 'Guest User';
-  const lenderRequests = user?.role === 'admin'
-    ? requests
-    : requests.filter((request) => request.toolId?.owner === currentName || request.toolOwner === currentName);
+  const lenderRequests = requests.filter((request) => request.toolId?.owner === currentName || request.toolOwner === currentName);
 
   const visibleTools = user?.role === 'admin' ? tools : tools.filter((tool) => tool.owner !== currentName);
 
@@ -27,37 +25,6 @@ function LenderPage({ user, tools, myTools, requests, onBorrow, onUpdate, onAdd,
         <div><strong>{lenderRequests.filter((item) => item.status === 'Returned').length}</strong><span>Successful shares</span></div>
         <div><strong>4.9</strong><span>Neighbour rating</span></div>
       </div>
-
-      <section className="dashboard-section">
-        <div className="section-heading">
-          <div><h2>Tools you can borrow</h2><p>{visibleTools.length} tools from other users.</p></div>
-        </div>
-        <div className="tool-grid">
-          {visibleTools.map((tool) => (
-            <article className="tool-card" key={tool.id}>
-              <div className="tool-image-wrap">
-                <img src={tool.image} alt={tool.name} />
-                <span className={`availability ${tool.available ? '' : 'busy'}`}>{tool.available ? 'Available' : 'Borrowed'}</span>
-              </div>
-              <div className="tool-content">
-                <div className="tool-category">{tool.category}</div>
-                <h3>{tool.name}</h3>
-                <p className="tool-description">{tool.description}</p>
-                <div className="owner-line">
-                  <span className="owner-avatar">{initials(tool.owner)}</span>
-                  <span><strong>{tool.owner}</strong><small>★ {tool.rating} · {tool.distance}</small></span>
-                </div>
-                <div className="tool-footer">
-                  <span><strong>₹{tool.deposit}</strong><small> refundable deposit</small></span>
-                  <button disabled={!tool.available} onClick={() => onBorrow(tool)}>
-                    {tool.available ? 'Borrow' : 'Unavailable'}
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
 
       <section className="dashboard-section">
         <div className="section-heading">
