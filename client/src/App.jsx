@@ -59,6 +59,8 @@ function App() {
   const [toast, setToast] = useState('');
   const [loading, setLoading] = useState(true);
   const [authReady, setAuthReady] = useState(false);
+  const [likedOnly, setLikedOnly] = useState(false);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     hydrateAuth();
@@ -89,28 +91,54 @@ function App() {
       const matchesText = !term || searchText.includes(term);
       const matchesCategory = category === 'All' || tool.category === category;
       const matchesAvailability = !availableOnly || tool.available;
+      const matchesLiked = !likedOnly || favorites.includes(tool.id);
 
-      return matchesText && matchesCategory && matchesAvailability;
+      return matchesText && matchesCategory && matchesAvailability && matchesLiked;
     });
-  }, [tools, query, category, availableOnly]);
+  }, [tools, query, category, availableOnly, likedOnly, favorites]);
 
   async function loadDashboardData(activeUser = user) {
     try {
       setLoading(true);
-      const [marketplaceTools, ownedTools, requestData, categoryData] = await Promise.all([
+      const [marketplaceTools, ownedTools, requestData, categoryData, favoriteData] = await Promise.all([
         api.getTools(),
         activeUser && activeUser.role !== 'admin' ? api.getTools({ mine: true }) : Promise.resolve([]),
         api.getRequests(),
-        api.getCategories()
+        api.getCategories(),
+        activeUser ? api.getFavorites(activeUser.name) : Promise.resolve([])
       ]);
       const uniqueTools = [...new Map([...marketplaceTools, ...ownedTools].map((tool) => [tool._id || tool.id, tool])).values()];
       setTools(uniqueTools.map(makeTool));
       setRequests(requestData.map(makeRequest));
       setCategories(categoryData.length ? ['All', ...categoryData] : fallbackCategories);
+      setFavorites(favoriteData.map((fav) => fav.toolId?._id || fav.toolId?.id || fav.toolId).filter(Boolean));
     } catch (error) {
       showMessage(error.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function toggleFavorite(toolId) {
+    if (!user) {
+      setView('login');
+      showMessage('Please login to save favorites');
+      return;
+    }
+    const currentUser = user;
+    const isFav = favorites.includes(toolId);
+    try {
+      if (isFav) {
+        await api.deleteFavorite(currentUser.name, toolId);
+        setFavorites((current) => current.filter((id) => id !== toolId));
+        showMessage('Removed from favorites');
+      } else {
+        await api.addFavorite({ userName: currentUser.name, toolId });
+        setFavorites((current) => [...current, toolId]);
+        showMessage('Added to favorites');
+      }
+    } catch (error) {
+      showMessage(error.message);
     }
   }
 
@@ -271,9 +299,13 @@ function App() {
           onCategoryChange={setCategory}
           availableOnly={availableOnly}
           onAvailabilityChange={setAvailableOnly}
+          likedOnly={likedOnly}
+          onLikedChange={setLikedOnly}
           onBorrow={setSelectedTool}
           loading={loading}
           categories={categories}
+          favorites={favorites}
+          onToggleFavorite={toggleFavorite}
         />
       )}
       {authReady && view === 'requests' && user && <MyRequestsPage requests={myRequests} onBrowse={() => setView('browse')} onChat={openChat} />}

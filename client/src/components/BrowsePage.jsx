@@ -9,9 +9,13 @@ function BrowsePage({
   onCategoryChange,
   availableOnly,
   onAvailabilityChange,
+  likedOnly,
+  onLikedChange,
   onBorrow,
   loading,
-  categories
+  categories,
+  favorites = [],
+  onToggleFavorite
 }) {
   return (
     <main>
@@ -37,14 +41,24 @@ function BrowsePage({
               placeholder="Search by tool, category or area"
             />
           </label>
-          <label className="availability-toggle">
-            <input
-              type="checkbox"
-              checked={availableOnly}
-              onChange={(event) => onAvailabilityChange(event.target.checked)}
-            />
-            <span>Available now</span>
-          </label>
+          <div className="filter-checkboxes">
+            <label className="availability-toggle">
+              <input
+                type="checkbox"
+                checked={availableOnly}
+                onChange={(event) => onAvailabilityChange(event.target.checked)}
+              />
+              <span>Available now</span>
+            </label>
+            <label className="availability-toggle liked-toggle">
+              <input
+                type="checkbox"
+                checked={likedOnly}
+                onChange={(event) => onLikedChange(event.target.checked)}
+              />
+              <span>❤️ Liked only</span>
+            </label>
+          </div>
         </div>
 
         <div className="category-list" aria-label="Tool categories">
@@ -72,7 +86,15 @@ function BrowsePage({
           <div className="empty-state"><strong>Loading tools</strong><p>Fetching latest tools from backend.</p></div>
         ) : tools.length > 0 ? (
           <div className="tool-grid">
-            {tools.map((tool) => <ToolCard key={tool.id} tool={tool} onBorrow={onBorrow} />)}
+            {tools.map((tool) => (
+              <ToolCard
+                key={tool.id}
+                tool={tool}
+                onBorrow={onBorrow}
+                isFavorited={favorites.includes(tool.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
+            ))}
           </div>
         ) : (
           <div className="empty-state">

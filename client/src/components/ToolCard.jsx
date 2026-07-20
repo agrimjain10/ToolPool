@@ -1,6 +1,6 @@
 import { initials } from '../helpers';
 
-function ToolCard({ tool, onBorrow }) {
+function ToolCard({ tool, onBorrow, isFavorited, onToggleFavorite }) {
   return (
     <article className="tool-card">
       <div className="tool-image-wrap">
@@ -8,12 +8,17 @@ function ToolCard({ tool, onBorrow }) {
         <span className={`availability ${tool.available ? '' : 'busy'}`}>
           {tool.available ? 'Available' : 'Borrowed'}
         </span>
+        {onToggleFavorite && (
+          <button className={`favorite-btn ${isFavorited ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onToggleFavorite(tool.id); }} aria-label="Favorite tool">
+            {isFavorited ? '❤️' : '🤍'}
+          </button>
+        )}
       </div>
 
       <div className="tool-content">
         <div className="tool-category">
           {tool.category}
-          <span style={{ marginLeft: '8px', padding: '2px 6px', background: '#e0e0e0', color: '#333', borderRadius: '4px', fontSize: '10px' }}>
+          <span style={{ marginLeft: '8px', padding: '2px 6px', background: '#e8ecea', color: '#143e32', borderRadius: '4px', fontSize: '10px', fontWeight: '700' }}>
             {tool.condition || 'Good'}
           </span>
         </div>
